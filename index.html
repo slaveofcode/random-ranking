@@ -28,7 +28,7 @@
       </div>
     </div>
     <div class="absolute right-10 top-15 flex flex-col">
-      <button v-if="!isRunning" class="bg-yellow-600 mb-3 text-white rounded-full border-4 border-white p-3 font-bold" @click="start()">
+      <button v-if="!isRunning && isReset" class="bg-yellow-600 mb-3 text-white rounded-full border-4 border-white p-3 font-bold" @click="start()">
         Start!
       </button>
       <button v-if="isRunning" class="bg-red-600 mb-3 text-white rounded-full border-4 border-white p-3 font-bold" @click="stop()">
@@ -46,6 +46,7 @@
         return {
           isRunning: false,
           isStarted: false,
+          isReset: true,
           isOnCancel: 0,
           glitterName: 'Standup',
           appName: 'Rank Names',
@@ -69,10 +70,13 @@
             this.members[i].height = this.baseHeight;
             this.members[i].rank = null;
           }
+
+          this.isReset = true;
         },
         async start() {
           this.isStarted = true;
           this.isRunning = true;
+          this.isReset = false;
 
           const points = [3, 5, 7, 9, 11];
           const secs = 15;
