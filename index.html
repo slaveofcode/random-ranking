@@ -1,0 +1,152 @@
+<html>
+
+<head>
+  <title>Standup Rank - RedAnt</title>
+  <link href="https://unpkg.com/tailwindcss@^2/dist/tailwind.min.css" rel="stylesheet">
+  <script src="https://unpkg.com/vue@next"></script>
+</head>
+
+<body class="bg-gray-900 text-white h-full">
+  <div id="app" class="container-fluid h-full p-10 flex flex-col justify-center items-center">
+    <h1 class="font-bold text-5xl flex flex-row">
+      <span class="animate-bounce block text-pink-600">{{ glitterName }}</span>
+      <span class="ml-2 pb-2 border-b-4 border-blue-500">{{ appName }}</span>
+    </h1>
+    <div class="container-md h-full mt-12 flex flex-row justify-center items-end">
+      <div v-for="member in members" class="flex transition-all" :style="`height: ${member.height}%`">
+        <div style="min-width: 100px; min-height: 45px;" :class="`bg-${member.color}-${member.colorNumber} py-2 px-6 mx-5 rounded-t-lg border-2 border-${member.color}-${member.colorNumber} font-bold text-lg text-center`">
+          <div class="mb-3 text-xl font-bold text-center">
+            {{ member.name }}
+          </div>
+          <div v-if="!member.rank" class="bg-white rounded-full overflow-hidden text-center" style="width: 50px; height: 50px; margin: 0 auto">
+            <img :src="member.img" />
+          </div>
+          <div v-if="member.rank" class="bg-white rounded-full p-2 font-bold text-2xl text-red-400 text-center" style="width: 50px; height: 50px; margin: 0 auto">
+            {{ member.rank }}
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="absolute right-10 top-15 flex flex-col">
+      <button class="bg-yellow-600 mb-3 text-white rounded-full border-4 border-white p-3 font-bold" @click="start()">
+        Start!
+      </button>
+      <button class="bg-blue-600 text-white rounded-full border-4 border-white p-3 font-bold" @click="reset()">
+        Reset
+      </button>
+    </div>
+  </div>
+
+  <script>
+    const app = Vue.createApp({
+      data() {
+        return {
+          glitterName: 'Standup',
+          appName: 'Rank Names',
+          members: [
+            { name: 'Idam', color: 'pink', colorNumber: 500, height: 15, rank: null, img: 'https://github.com/idamidzin.png?size=50' },
+            { name: 'Amri', color: 'indigo', colorNumber: 500, height: 15, rank: null, img: 'https://github.com/khoirulamri.png?size=50' },
+            { name: 'Ayat', color: 'green', colorNumber: 500, height: 15, rank: null, img: 'https://github.com/ayatmaulana.png?size=50' },
+            { name: 'Hendi', color: 'blue', colorNumber: 500, height: 15, rank: null, img: 'https://github.com/hrusfandi.png?size=50' },
+            { name: 'Samsul', color: 'yellow', colorNumber: 500, height: 15, rank: null, img: 'https://github.com/meonrails.png?size=50'  },
+          ]
+        }
+      },
+      computed: {
+        baseHeight() {
+          return 15;
+        }
+      },
+      methods: {
+        reset() {
+          for (let i = 0; i < this.members.length; i++) {
+            this.members[i].height = this.baseHeight;
+            this.members[i].rank = null;
+          }
+        },
+        async start() {
+          const points = [3, 5, 7, 9, 11];
+          const secs = 15;
+
+          const loops = [];
+          for (let i = 0; i < this.members.length; i++) {
+            loops.push(this.loop(this.members[i], secs, points, this.baseHeight));
+          }
+
+          await Promise.all(loops);
+
+          for (let i = 0; i < this.members.length; i++) {
+            this.members[i].rank = this.members.length;
+          }
+
+          for (let i = 0; i < this.members.length; i++) {
+            for (let j = 0; j < this.members.length; j++) {
+              if (this.members[i].height > this.members[j].height) {
+                this.members[i].rank -= 1
+              }
+            }
+          }
+        },
+        async loop(member, durSecs, points, base) {
+          let initVal = 0;
+          const finalTime = new Date();
+          finalTime.setSeconds(finalTime.getSeconds() + durSecs);
+
+          const maxTimesUp = 3;
+          let currUps = 0;
+          let isFirst = true;
+
+          while ((new Date()).getTime() < finalTime.getTime()) {
+            const isUp = Math.round(Math.random()) // 0 down, 1 up
+            const point = points[Math.floor(Math.random() * points.length)];
+
+            let newPoint = isUp || isFirst
+              ? point
+              : -point
+            
+            isFirst = false;
+
+            if (member.height + newPoint < base) {
+              newPoint = point; // make positive
+            }
+
+            if (member.height > 100) {
+              newPoint = -point; // make negative
+            }
+            
+            // limiting up times
+            if (currUps == maxTimesUp) {
+              if (member.height - newPoint < this.baseHeight) {
+                member.height = this.baseHeight;
+              } else {
+                newPoint = -newPoint
+              }
+                currUps = 0
+            }
+
+            if (newPoint) {
+              currUps++;
+            }
+            
+            if (newPoint > 100) {
+              member.height = 100; // keep max height 100%
+            } else if ((member.height + newPoint) > 100) {
+              member.height -= newPoint; 
+            } else {
+              member.height += newPoint; 
+            }
+
+	    //const waitMs = (newPoint == 1 ? 2 : newPoint) * 150;
+            await new Promise(resolve => setTimeout(() => resolve(), newPoint * 30))
+          }
+
+          console.log('done: ', (new Date()).getTime(), '-', finalTime.getTime())
+        }
+      }
+    });
+
+    app.mount('#app');
+  </script>
+</body>
+
+</html>
