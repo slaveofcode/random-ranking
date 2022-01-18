@@ -82,28 +82,46 @@
           this.isReset = false;
 
           const points = [3, 5, 7, 9, 11];
-          const secs = 15;
+          let randSecs = 15;
 
-          const loops = [];
-          for (let i = 0; i < this.members.length; i++) {
-            loops.push(this.loop(this.members[i], secs, points, this.baseHeight));
-          }
+          while (true) {
+            const loops = [];
+            for (let i = 0; i < this.members.length; i++) {
+              loops.push(this.loop(this.members[i], randSecs, points, this.baseHeight));
+            }
 
-          await Promise.all(loops);
+            await Promise.all(loops);
 
-          for (let i = 0; i < this.members.length; i++) {
-            this.members[i].rank = this.members.length;
-          }
+            for (let i = 0; i < this.members.length; i++) {
+              this.members[i].rank = this.members.length;
+            }
 
-          for (let i = 0; i < this.members.length; i++) {
-            for (let j = 0; j < this.members.length; j++) {
-              if (this.members[i].height > this.members[j].height) {
-                this.members[i].rank -= 1
+            for (let i = 0; i < this.members.length; i++) {
+              for (let j = 0; j < this.members.length; j++) {
+                if (this.members[i].height > this.members[j].height) {
+                  this.members[i].rank -= 1
+                }
               }
             }
-          }
 
-          // check duplicate rank
+            // check duplicate rank
+            let hasDuplicate = false;
+            for (let i = 0; i < this.members.length; i++) {
+              for (let j = 0; j < this.members.length; j++) {
+                if (j === i) continue;
+                if (this.members[i].rank === this.members[j].rank) {
+                  hasDuplicate = true;
+                }
+              }
+            }
+
+            if (hasDuplicate) {
+              randSecs = 3;
+              continue;
+            }
+
+            break;
+          }
 
           this.isRunning = false;
         },
